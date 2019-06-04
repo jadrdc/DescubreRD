@@ -1,4 +1,4 @@
-package  agustinreinoso.com.descubrerd.models;
+package agustinreinoso.com.descubrerd.models;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -10,19 +10,18 @@ import java.io.Serializable;
 public class UserPlace implements Serializable {
     @ColumnInfo(name = "id")
     @PrimaryKey(autoGenerate = true)
-    private  int id;
+    private int id;
     @ColumnInfo(name = "name")
-    private  String name;
+    private String name;
     @ColumnInfo(name = "address")
-    private  String address;
+    private String address;
     @ColumnInfo(name = "lat")
-    private  long lat;
+    private double lat;
     @ColumnInfo(name = "lng")
-    private  long lng;
+    private double lng;
     @ColumnInfo(name = "url")
-    private  String url;
-    @ColumnInfo(name = "rating")
-    private  double rating;
+    private String url;
+
 
     public int getId() {
         return id;
@@ -48,21 +47,14 @@ public class UserPlace implements Serializable {
         this.address = address;
     }
 
-    public long getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public void setLat(long lat) {
-        this.lat = lat;
-    }
-
-    public long getLng() {
+    public double getLng() {
         return lng;
     }
 
-    public void setLng(long lng) {
-        this.lng = lng;
-    }
 
     public String getUrl() {
         return url;
@@ -72,11 +64,13 @@ public class UserPlace implements Serializable {
         this.url = url;
     }
 
-    public double getRating() {
-        return rating;
+
+    public void setLat(double lat) {
+        this.lat = lat;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public void setLng(double lng) {
+        this.lng = lng;
     }
+
 }
