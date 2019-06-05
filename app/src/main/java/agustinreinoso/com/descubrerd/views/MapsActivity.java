@@ -5,13 +5,17 @@ import agustinreinoso.com.descubrerd.config.ConfigKey;
 import agustinreinoso.com.descubrerd.models.UserPlace;
 import agustinreinoso.com.descubrerd.viewmodels.PlaceViewModel;
 import android.Manifest;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.ProgressBar;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -38,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng latLng;
     private PlaceFoundActionFragment placeFoundActionFragment;
     private PlaceViewModel placeViewModel;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +63,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Place.Field.NAME, Place.Field.TYPES));
 
         autocompleteFragment.setOnPlaceSelectedListener(this);
+
+        if (placeViewModel == null) {
+            placeViewModel = ViewModelProviders.of(this).get(PlaceViewModel.class);
+        }
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+
+        progressBar = findViewById(R.id.progressbar);
+        placeViewModel.getIsSaving().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                int visibility = View.INVISIBLE;
+                if (aBoolean == true) {
+                    visibility = View.VISIBLE;
+
+                } else {
+                    visibility = View.INVISIBLE;
+                }
+                progressBar.setVisibility(visibility);
+            }
+        });
 
     }
 
@@ -72,7 +96,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (placeFoundActionFragment != null) {
                     placeFoundActionFragment.show(getSupportFragmentManager(), "add_places");
 
-                    return true;
                 }
                 return false;
             }
@@ -93,8 +116,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
                 mMap.addMarker(new MarkerOptions().position(latLng).title("Ubicacion Actual").icon(BitmapDescriptorFactory.
-                        fromResource(R.drawable.current_location)));
+                        fromResource(R.drawable.current_location))).showInfoWindow();
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
 
             }
@@ -108,24 +132,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (placeFoundActionFragment == null) {
             placeFoundActionFragment = new PlaceFoundActionFragment();
         }
-        if (placeViewModel == null) {
-            placeViewModel = ViewModelProviders.of(this).get(PlaceViewModel.class);
-        }
         UserPlace placeEntity = new UserPlace();
         placeEntity.setAddress(place.getAddress());
         placeEntity.setLat(place.getLatLng().latitude);
         placeEntity.setLng(place.getLatLng().longitude);
         placeEntity.setName(place.getName());
+        Place.Type x = place.getTypes().get(0);
         mMap.clear();
         LatLng location = new LatLng(placeEntity.getLat(), placeEntity.getLng());
-        mMap.addMarker(new MarkerOptions().position(location).title(place.getName()
+       /* Place.Type t = place.getTypes().get(0);
+        String te = t.name();
+*/
+        mMap.addMarker(new MarkerOptions().position(location).title(placeEntity.getName()
         ).icon(BitmapDescriptorFactory.
-                fromResource(R.drawable.current_location)));
+                fromResource(R.drawable.current_location))).showInfoWindow();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
 
         placeViewModel.getCurrentPlace().setValue(placeEntity);
-
         placeFoundActionFragment.show(getSupportFragmentManager(), "add_places");
+
     }
 
     @Override
@@ -136,5 +161,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 }
 //TODO: CUANDO BUSQUE POR AUTOCOMPLETE SI HAY OTROS LUGARES REGISTRADOS QUE SE MUESTREN CON ICONO DEL TIPO DE LUGAR
-//TODO: AGREGAR TITULO AL MARKERT
 //TODO: FUNCIONALIDAD BOTTOMSHEET
+//TODO:ANIMACIONES

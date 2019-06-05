@@ -11,6 +11,7 @@ import android.support.design.widget.BottomSheetDialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class PlaceFoundActionFragment extends BottomSheetDialogFragment {
@@ -18,6 +19,7 @@ public class PlaceFoundActionFragment extends BottomSheetDialogFragment {
     private PlaceViewModel placeViewModel;
     private TextView txtPlaceName;
     private TextView txtPlaceAddress;
+    private ImageView imgPlaceIcon;
 
     public PlaceFoundActionFragment() {
         // Required empty public constructor
@@ -35,14 +37,18 @@ public class PlaceFoundActionFragment extends BottomSheetDialogFragment {
         placeViewModel = ViewModelProviders.of(getActivity()).get(PlaceViewModel.class);
 
         txtPlaceName = (TextView) view.findViewById(R.id.place_found_name);
-        txtPlaceAddress=(TextView)view.findViewById(R.id.place_found_address);
-
+        txtPlaceAddress = (TextView) view.findViewById(R.id.place_found_address);
+        imgPlaceIcon = (ImageView) view.findViewById(R.id.place_found_img);
 
         placeViewModel.getCurrentPlace().observe(this, new Observer<UserPlace>() {
             @Override
             public void onChanged(@android.support.annotation.Nullable UserPlace place) {
                 txtPlaceName.setText(place.getName());
                 txtPlaceAddress.setText(place.getAddress());
+
+
+
+
             }
         });
         return view;
