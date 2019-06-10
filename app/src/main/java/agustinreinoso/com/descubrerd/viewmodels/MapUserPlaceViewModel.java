@@ -8,9 +8,23 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 
-public class PlaceViewModel extends AndroidViewModel {
+public class MapUserPlaceViewModel extends AndroidViewModel {
     private MutableLiveData<UserPlace> currentPlace;
     private PlaceService placeService;
+
+    public PlaceService getPlaceService() {
+        return placeService;
+    }
+
+    public void setPlaceService(PlaceService placeService) {
+        this.placeService = placeService;
+    }
+
+
+    public void setIsSaving(MutableLiveData<Boolean> isSaving) {
+        this.isSaving = isSaving;
+    }
+
 
     public MutableLiveData<Boolean> getIsSaving() {
         if (isSaving == null) {
@@ -22,7 +36,7 @@ public class PlaceViewModel extends AndroidViewModel {
 
     private MutableLiveData<Boolean> isSaving;
 
-    public PlaceViewModel(@NonNull Application application) {
+    public MapUserPlaceViewModel(@NonNull Application application) {
         super(application);
     }
 
@@ -41,19 +55,25 @@ public class PlaceViewModel extends AndroidViewModel {
     }
 
     public void savePlaceToFavorite(final UserPlace place) {
-        if (placeService == null) {
-            placeService = new PlaceDatabaseService(getApplication());
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                isSaving.postValue(true);
-                placeService.insert(place);
-                isSaving.postValue(false);
+        if (!place.isSaved()) {
+            if (placeService == null) {
+                placeService = new PlaceDatabaseService(getApplication());
             }
-        }).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    isSaving.postValue(true);
+                    long id=placeService.insert(place);
+                    place.setSaved(true);
 
+                    isSaving.postValue(false);
+                }
+            }).start();
+        }
 
+    }
+
+    public void changeSavingStatus() {
+        isSaving.setValue(!isSaving.getValue());
     }
 }

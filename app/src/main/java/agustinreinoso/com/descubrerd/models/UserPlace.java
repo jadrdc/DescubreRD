@@ -22,6 +22,25 @@ public class UserPlace implements Serializable {
     @ColumnInfo(name = "url")
     private String url;
 
+    public String getPlace_id() {
+        return place_id;
+    }
+
+    public void setPlace_id(String place_id) {
+        this.place_id = place_id;
+    }
+
+    @ColumnInfo(name = "place_id")
+    private String place_id;
+    private transient boolean isSaved = false;
+
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    public void setSaved(boolean saved) {
+        isSaved = saved;
+    }
 
     public int getId() {
         return id;

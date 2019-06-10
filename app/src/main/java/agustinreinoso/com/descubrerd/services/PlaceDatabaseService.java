@@ -5,6 +5,7 @@ import agustinreinoso.com.descubrerd.config.ConfigKey;
 import agustinreinoso.com.descubrerd.interfaces.PlaceService;
 import agustinreinoso.com.descubrerd.models.UserPlace;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 
@@ -16,7 +17,7 @@ public class PlaceDatabaseService implements PlaceService {
 
     public PlaceDatabaseService(Context app)
     {
-        db = Room.databaseBuilder(app, DataBaseRoomAccess.class, ConfigKey.DB_NAME).build();
+        db = Room.databaseBuilder(app, DataBaseRoomAccess.class, ConfigKey.DB_NAME).fallbackToDestructiveMigration().build();
     }
 
     @Override

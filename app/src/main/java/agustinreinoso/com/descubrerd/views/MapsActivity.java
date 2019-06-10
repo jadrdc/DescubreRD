@@ -1,19 +1,28 @@
 package agustinreinoso.com.descubrerd.views;
 
 import agustinreinoso.com.descubrerd.R;
+import agustinreinoso.com.descubrerd.UserPlaceListFragment;
 import agustinreinoso.com.descubrerd.config.ConfigKey;
 import agustinreinoso.com.descubrerd.models.UserPlace;
-import agustinreinoso.com.descubrerd.viewmodels.PlaceViewModel;
+import agustinreinoso.com.descubrerd.viewmodels.MapUserPlaceViewModel;
 import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import com.google.android.gms.common.api.Status;
@@ -35,13 +44,13 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 
 import java.util.Arrays;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, PlaceSelectionListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, PlaceSelectionListener, NavigationView.OnNavigationItemSelectedListener {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     private LatLng latLng;
     private PlaceFoundActionFragment placeFoundActionFragment;
-    private PlaceViewModel placeViewModel;
+    private MapUserPlaceViewModel placeViewModel;
     private ProgressBar progressBar;
 
     @Override
@@ -50,7 +59,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_main);
         Places.initialize(getApplicationContext(), ConfigKey.GOOGLE_MAPS_KEY);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -65,7 +85,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         autocompleteFragment.setOnPlaceSelectedListener(this);
 
         if (placeViewModel == null) {
-            placeViewModel = ViewModelProviders.of(this).get(PlaceViewModel.class);
+            placeViewModel = ViewModelProviders.of(this).get(MapUserPlaceViewModel.class);
         }
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
 
@@ -137,16 +157,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         placeEntity.setLat(place.getLatLng().latitude);
         placeEntity.setLng(place.getLatLng().longitude);
         placeEntity.setName(place.getName());
+        placeEntity.setPlace_id(place.getId());
         Place.Type x = place.getTypes().get(0);
         mMap.clear();
         LatLng location = new LatLng(placeEntity.getLat(), placeEntity.getLng());
-       /* Place.Type t = place.getTypes().get(0);
-        String te = t.name();
-*/
+
         mMap.addMarker(new MarkerOptions().position(location).title(placeEntity.getName()
         ).icon(BitmapDescriptorFactory.
                 fromResource(R.drawable.current_location))).showInfoWindow();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+
 
         placeViewModel.getCurrentPlace().setValue(placeEntity);
         placeFoundActionFragment.show(getSupportFragmentManager(), "add_places");
@@ -159,7 +179,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main2, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        if (id == R.id.nav_places) {
+            Intent intent = new Intent(getApplicationContext(),UserPlaceListFragment.class);
+            startActivity(intent);
+        }
+
+        return true;
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+
+        super.onBackPressed();
+    }
 }
 //TODO: CUANDO BUSQUE POR AUTOCOMPLETE SI HAY OTROS LUGARES REGISTRADOS QUE SE MUESTREN CON ICONO DEL TIPO DE LUGAR
-//TODO: FUNCIONALIDAD BOTTOMSHEET
-//TODO:ANIMACIONES
